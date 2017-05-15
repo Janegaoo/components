@@ -21,6 +21,10 @@
 		//周日特殊处理
 		if (firstDayWeekDay === 0) firstDayWeekDay = 7;
 
+		//处理年份 处理过后就不存在越界的问题
+		year = firstDay.getFullYear();
+		month = firstDay.getMonth() + 1;
+
 		//上个月的最后一天
 		var lastDayofLastMonth = new Date(year, month - 1, 0);
 		var lastDateofLastMonth = lastDayofLastMonth.getDate();
@@ -59,7 +63,11 @@
 			});
 		}
 
-		return ret;
+		return {
+			year: year,
+			month: month,
+			days: ret
+		};
 
 	};
 
