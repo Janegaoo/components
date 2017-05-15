@@ -8,7 +8,7 @@
 	datepicker.getMonthData = function(year, month){
 		
 		var ret = [];//用来返回结果，数组中的每个数据就是当前的日期
-		if (!year || !month){
+		if (typeof year==='undefined'|| typeof month==='undefined') {
 			var today = new Date();
 			year = today.getFullYear();
 			month = today.getMonth() + 1;

@@ -1,9 +1,9 @@
 (function(){
 	var datepicker = window.datepicker;
+	var monthData;
+	var $wrapper;
 	datepicker.buildUi = function(year, month){
-
-		var monthData = datepicker.getMonthData(year, month);
-
+		monthData = datepicker.getMonthData(year, month);
 		var html = '<div class="ui-datepicker-header">'+
 			'<a href="#" class="ui-datepicker-btn ui-date-picker-prev-btn">&lt;</a>'+
 			'<a href="#" class="ui-datepicker-btn ui-date-picker-next-btn">&gt;</a>'+
@@ -31,7 +31,7 @@
 						html += '<tr>';
 					}
 
-					html += '<td>'+ date.showDate + '</td>';
+					html += '<td data-date="'+ date.date +'">'+ date.showDate + '</td>';
 
 					if (i % 7 === 6){
 						html += '</tr>';
@@ -46,14 +46,40 @@
 		return html;
 	};
 
-	datepicker.init = function(input){
-		var html = datepicker.buildUi();
-		var $wrapper = document.createElement('div');
-		$wrapper.className = 'ui-datepicker-wrapper';
-		$wrapper.innerHTML = html;	
-		
-		document.body.appendChild($wrapper);
+	datepicker.render = function(direction){
+		var year,month;
 
+		if (monthData){
+			year = monthData.year;
+			month = monthData.month;
+		}
+		
+		if (direction === 'prev') month--;
+		if (direction === 'next') month++;
+
+		if (month < 1) {
+			year--;
+			month = 12;
+		}
+		if(month > 12) {
+			year++;
+			month = 1;
+}
+
+		var html = datepicker.buildUi(year, month);
+
+		$wrapper = document.querySelector('.ui-datepicker-wrapper');
+		if (!$wrapper) {
+			$wrapper = document.createElement('div');
+			document.body.appendChild($wrapper);
+			$wrapper.className = 'ui-datepicker-wrapper';
+		}
+
+		$wrapper.innerHTML = html;
+	};
+
+	datepicker.init = function(input){	
+		datepicker.render();	
 		//显示隐藏
 		var $input = document.querySelector(input);
 		var isOpen = false;
@@ -73,6 +99,46 @@
 				isOpen = true;
 			}
 		}, false);
+
+		$wrapper.addEventListener('click', function(e){
+			var $target = e.target;
+			if (!$target.classList.contains('ui-datepicker-btn')) return;
+
+			//上一月
+			if ($target.classList.contains('ui-date-picker-prev-btn')){
+				datepicker.render('prev');
+			}else if ($target.classList.contains('ui-date-picker-next-btn')){
+				datepicker.render('next');
+			}
+
+		}, false);
+
+		$wrapper.addEventListener('click', function(e){
+			var $target = e.target;
+			if ($target.tagName.toLowerCase() !== 'td') return;
+
+			var date = new Date(monthData.year, monthData.month - 1, $target.dataset.date);
+
+			$input.value = format(date);
+
+			//关闭日历
+			$wrapper.classList.remove('ui-datepicker-wrapper-show');
+			isOpen = false;
+
+		});
 	};
+
+	function format(date){
+		var ret = '';
+		var padding = function(num){
+			if (num <= 9){
+				return '0' + num;
+			}
+			return num;
+		};
+		ret = date.getFullYear() + '-' + padding((date.getMonth() + 1)) + '-' + padding(date.getDate());
+
+		return ret; 
+	}
 
 })();
